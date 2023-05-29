@@ -1,0 +1,176 @@
+---
+title: "2_Data Description"
+author: "Your Name Here"
+---
+
+Now let's start working with actual data! For this class, the University of Michigan has shared with us their (Healthy Minds Study)[https://healthymindsnetwork.org/hms/] data. The Healthy Minds study is a large (N = 95,860) nationwide study on college students and their mental health. I saved a few variables from this dataset for us to use in our class. This chunks loads the packages we'll need today and then loads the data.
+
+```{r}
+library(tidyverse)
+library(here)
+
+data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
+```
+
+# Datasets
+
+`data` is a dataset. That means it is an object with a certain number of columns (variables) and a rows (observations). We can get our dataset's dimensions with this function.
+
+```{r}
+dim(data)
+```
+
+95,860 observations, and 21 variables! We can learn about each variable with the following functions. `str()` tells us basic information about each variable, while `summary()` goes into more detail.
+
+```{r}
+str(data)
+
+summary(data)
+```
+
+Of course, you can also view data in spreadsheet form using `View(data)`.
+
+## Vectors
+
+Remember that each variable is what is known as a "vector." Everything we learned in 1_Introduction to R about vectors applies here. For example, you can print the age variable like this. (For now, let's just print the first 10 values.)
+
+```{r}
+print(data$age[1:10])
+```
+
+We can also use functions with age, like this.
+
+```{r}
+age_plus_ten <- data$age[1:10] + 10
+print(age_plus_ten)
+
+age_greater_than_21 <- data$age[1:10] > 21
+print(age_greater_than_21)
+```
+
+# Data Description
+
+## Continuous Variables
+
+Now that we're working with real data, let's put our data description skills to good use. First, let's describe the sample. Let's start with age.
+
+```{r}
+range(data$age)
+mean(data$age)
+median(data$age)
+sd(data$age)
+```
+
+We can also find summary statistics and draw histograms, like before.
+
+```{r}
+median <- median(x = data$age)
+ninetyfifth_percentile <- quantile(x = data$age, probs = .95)
+
+print(median)
+print(ninetyfifth_percentile)
+
+hist(data$age)
+
+abline(v = median)
+abline(v = ninetyfifth_percentile)
+```
+
+## Categorical Variables
+
+Age is a numeric variable. Your age is continuous (although we generally represent it with the *discrete* variable of age in years). What if we wanted to look at a categorical variable, like gender?
+
+```{r}
+table(data$gender)
+```
+
+The `table()` function shows us the frequencies of gender in our dataset. Note that functions like `mean()` and `sd()` won't work on categorical variables like gender.
+
+Now, the point of the Healthy Minds Study isn't to tell us general demographics about U.S. college students - it's to measure their _mental health_. So, let's get into it! How many college students in 2021-2022 experienced major depression?
+
+To get a frequency table, use `table()` or `count()`. Remember to use `help()` or `?` to learn more about each function.
+
+```{r}
+table(data$depression)
+
+count(data, depression)
+```
+
+It looks like 19,275 experienced depression, while 66,116 did not, and another 10,469 are missing data. 
+
+What is the proportion of students who were depressed? (Note: The `na.rm` argument tells `mean()` to ignore NA values in its calculation.)
+
+Depression is a categorical variable. However, because depression is a *binary* categorical variable (all 1's and 0's), we can still use `mean()` to get the proportion of students who are depressed.
+
+```{r}
+mean(data$depression, na.rm = T)
+```
+
+## Combining Variables
+
+Let's say we wanted a _contingency table_ of depression by gender. Here's how we would do that.
+
+```{r}
+table(data$depression, data$gender)
+```
+
+`count()` gives us the same data, but in a taller format.
+
+```{r}
+count(data, depression, gender)
+```
+
+Wow, those are pretty stark differences! Among men, about 4k students experienced depression while about 19k did not (around 20%). Among women, 13k students experienced depression while 45k did not (around 25%). Among trans and gender diverse students, 2k did and 2k did not - about 50%!
+
+If we want to know exact statistics by group, we have a couple ways of doing this. The first is by using square brackets, which subset data. You can read square brackets as saying "where," like this:
+
+`data$age[data$gender == "Male"]`
+
+...reads as...
+
+"Age, _where_ gender is equal to Male"
+
+```{r}
+male_age <- data$age[data$gender == "Male"]
+female_age <- data$age[data$gender == "Female"]
+
+mean(male_age)
+mean(female_age)
+```
+
+An easier way to do this is by using the `tidyverse` world of functions. The tidyverse function `summarize()` summarizes variables, while the function `group_by()` organizes datasets by grouping variables. You combine `tidyverse` functions in "pipelines" connected by the "pipe operator" `%>%`. We'll learn more about these functions later, and you can always see more examples here: https://dplyr.tidyverse.org/articles/dplyr.html
+
+Note: When using `tidyverse` functions, you don't need to use `data$` to call a variable, because you already tell `tidyverse` what your dataset is at the beginning of your pipe.
+
+```{r}
+data %>%
+  summarize(mean_age = mean(age),
+            sd_age = sd(age))
+
+data %>%
+  group_by(gender) %>%
+  summarize(mean_age = mean(age),
+            sd_age = sd(age))
+```
+
+Now, let's apply this to depression. What exact proportion of students experienced past-year depression, grouped by gender?
+
+```{r}
+data %>%
+  group_by(gender) %>%
+  summarize(proportion_depressed = mean(depression, na.rm = T))
+```
+
+> **HW: For your homework, I want you to take some time to explore these (real!) data. Use `View()` or `str()` to observe the dataset, then `summary()` to describe it. Use more functions (`mean()`, `median()`, `table()`, etc.) to learn about specific variables that interest you (10 points).**
+
+```{r}
+# Your code here
+
+```
+
+> **Once you have done this, pick a continuous or binary "outcome variable" that you would like to analyze, and a "grouping variable" that you would like to group the outcome by. Produce summary statistics of the outcome variable for the full sample and for each group (10 Points).**
+
+```{r}
+# Your code here
+
+```

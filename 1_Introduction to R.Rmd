@@ -118,7 +118,7 @@ help(mean)
 ?mean
 ```
 
-> **HW: Create your own vector with ten numbers. Calculate (and print) the mean, median, and standard deviation using the functions `mean()`, `median()`, and `sd()`. (10 Points)**
+> **HW: Create your own vector with ten numbers. Calculate (and print) the mean, median, and standard deviation using the functions `mean()`, `median()`, and `sd()` (10 Points).**
 
 ```{r}
 # Your code here
