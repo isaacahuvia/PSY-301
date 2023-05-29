@@ -5,16 +5,169 @@ output:
   pdf_document: default
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+Below, you will see a code "chunk." You can run it by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
 
 ```{r}
-plot(cars)
+print("At the end of the day, R is a fancy calculator")
+print(1 + 1)
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+When you click "Knit" above, a pdf file will be saved that includes everything in this Notebook, including all text and code. That pdf file is what you should submit for your homework. Go ahead and try now - hit "Knit" above and see what comes up!
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+# Introduction to R
+
+We will start with a walkthrough of the R basics. This website offers a set of [Primers](https://posit.cloud/learn/primers) and [Cheat Sheets](https://posit.cloud/learn/cheat-sheets) that will also help you in your journey. There are also a series of freely available online books on R, available [here](https://bookdown.org/). For now, you may find the ["Programming Basics"](https://posit.cloud/learn/primers/1.2) primer useful.
+
+## Packages
+
+By default, R includes basic [Functions](https://posit.cloud/learn/primers/1.2) for working with data. Various R users have built on this by publishing software "packages" that help us do more advanced jobs. One package you'll always want to load is the "tidyverse" package. Here's how you load it.
+
+```{r}
+library(tidyverse)
+```
+
+## R is a Calculator
+
+At the most basic level, R is a calculator. You can ask it to do stuff that calculators do, like this.
+
+```{r}
+1 + 1
+2 * 2
+```
+
+Not only can you add (`+`), subtract (`-`), multiply (`*`), and divide (`/`), but you can conduct "logical" tests as well. Each of these "logical" tests will return either `TRUE` or `FALSE`
+
+```{r}
+# Does 1 equal 1?
+1 == 1
+
+# Does 1 equal 2?
+1 == 2
+
+# Is 2 greater than 1?
+2 > 1
+
+# Is 2 greater than or equal to 2?
+2 >= 2
+```
+
+## Objects
+
+You can also save numbers, and other objects, to your environment by using `<-`. 
+
+```{r}
+my_number <- 10
+
+print(my_number)
+```
+
+You can also save the results of other operations. For example, this will save the value `TRUE`.
+
+```{r}
+result <- 1 + 1 == 2
+
+print(result)
+```
+
+## Vectors
+
+When you're working with big datasets, you won't want to work with individual values one-by-one. Instead, you'll be working with _sets_ of numbers: variables (e.g., age, height, or depression symptom severity). In R, a set of numbers is known as a "vector," and is given by the notation `c(n1, n2, ..., n)`.
+
+```{r}
+my_vector <- c(1, 2, 3, 4, 5)
+```
+
+Instead of working with each of these values one at a time, we can work with the whole vector at once.
+
+```{r}
+vector_plus_one <- my_vector + 1
+
+print(vector_plus_one)
+```
+
+You can also work with multiple vectors at once.
+
+```{r}
+a <- c(1, 2, 3, 4, 5)
+b <- c(1, 2, 3, 0, 10)
+
+print(a + b)
+print(a == b)
+```
+
+## Functions
+
+A _function_ is something that you _do_ to an object or number. For example, we have been using the function `print()` to make the numbers above show up in this document. (By the way, you don't _have to_ use `print()` to do this - if you just run a line of code with nothing else in it (e.g., `1 + 1`), it will print automatically.) In the future, we will be using more complicated functions. All functions look like this:
+
+`function()`
+
+In the parentheses are the function's _arguments_. Arguments are how you tell a function what to do. For example, in the function `mean()`, the argument `x = ` tells the function what to take the sum of. 
+
+```{r}
+mean(x = my_vector)
+```
+
+You can always learn more about a function and it's arguments by using the function `help()`, or more simply, `?`.
+
+```{r}
+help(mean)
+?mean
+```
+
+> **HW: Create your own vector with ten numbers. Calculate (and print) the mean, median, and standard deviation using the functions `mean()`, `median()`, and `sd()`. (10 Points)**
+
+```{r}
+# Your code here
+
+```
+
+# Probability
+
+Now, let's talk a bit about probability. A "normal" distribution is a hill- or bell curve-shaped distribution of numbers with a mean and a standard deviation. The R function `rnorm()` let's us simulate a set of numbers with a normal distribution.
+
+```{r}
+my_distribution <- rnorm(n = 10000, mean = 5, sd = 2)
+
+# Here are the first 50 values
+print(my_distribution[1:50])
+
+# This is the mean
+mean(my_distribution)
+
+# This is the standard deviation
+sd(my_distribution)
+
+# Here's a histogram
+hist(my_distribution)
+```
+
+In class, we talked about _percentiles_. A percentile is the point in the distribution where X% of data falls below that point. For example, the median is equal to the 50th percentile. 
+
+Let's say we wanted to know the tenth percentile of our data. This is how you would find that out. The `probs` argument is how we tell is what percentile we want: .1 for 10th percentile, .5 for 50th percentile, etc.
+
+```{r}
+tenth_percentile <- quantile(x = my_distribution, probs = .1)
+
+print(tenth_percentile)
+```
+
+You can visualize the tenth percentile like this.
+
+```{r}
+hist(my_distribution)
+
+abline(v = tenth_percentile)
+```
+
+10% of the data fall at or below the 10th percentile. 
+
+> **HW: Create your own normal distribution with 10,000 data points, a mean of 50, and a standard deviation of 10. Calculate (and print) the 50th percentile (using `quantile()`) as well as the median. Are these numbers the same? Why or why not? (10 Points)**
+
+```{r}
+# Your code here
+
+```
