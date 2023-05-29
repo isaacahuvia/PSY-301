@@ -1,6 +1,7 @@
 ---
 title: "2_Data Description"
 author: "Your Name Here"
+output: pdf_document
 ---
 
 Now let's start working with actual data! For this class, the University of Michigan has shared with us their (Healthy Minds Study)[https://healthymindsnetwork.org/hms/] data. The Healthy Minds study is a large (N = 95,860) nationwide study on college students and their mental health. I saved a few variables from this dataset for us to use in our class. This chunks loads the packages we'll need today and then loads the data.
