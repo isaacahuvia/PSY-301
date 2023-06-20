@@ -1,0 +1,104 @@
+---
+title: "3_Data Manipulation"
+author: "Your Name Here"
+output: pdf_document
+---
+
+The point of statistics is to learn things with data. However, before we can learn from our data, we often have to "clean up" and otherwise modify our data to prepare it for analysis. In fact, in my experience as a data analyst, this is about 90% of the job!
+
+The R package `dplyr` (a part of the "`tidyverse`") gives us all the tools we need to get a dataset ready for analysis. Again, let's use the (Healthy Minds Study)[https://healthymindsnetwork.org/hms/] data as our dataset for this assignment.
+
+```{r}
+library(tidyverse)
+library(here)
+
+data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
+```
+
+I'll walk you through the `dplyr` functions here, but you can also find more information here: https://dplyr.tidyverse.org/. 
+
+# Data Manipulation with `dplyr`: The Five Verbs
+
+When it comes to data manipulation, these five functions let you do basically everything you need to do:
+
+- `select()`: Selects certain variables (columns) from a dataset
+- `filter()`: Filters a dataset to only certain rows
+- `mutate()`: Creates new variables based on existing variables
+- `summarize()`: Creates summary statistics based on your dataset
+- `group_by()`: Does any of the above things by group
+
+## `select`
+
+`select()` selects certain variables from a dataset. Let's say we want to come up with a dataset that only includes the mental health-related variables from the original. We would do it like this:
+
+```{r}
+mental_health_data <- data %>%
+  select(depression,
+         depression_severity,
+         anxiety,
+         anxiety_severity,
+         past_year_therapy,
+         past_year_medication)
+```
+
+Remember that in `dplyr` (and all "`tidyverse`" functions), you use `%>%` to pass data to functions. Because you're letting each function know what dataset it's using, you don't need to use `$` to call variables.
+
+## `filter`
+
+`filter()` filters the dataset to only certain rows (in this case, rows are respondents to the survey). Let's use this tool to limit the dataset to only students who responded to the depression and anxiety questions. For students who didn't respond to these questions, their values are `NA`. We can check if a value is `NA` with `is.na()`; for example, `is.na(NA)` will return `TRUE` and `is.na(5)` will return `FALSE`.
+
+```{r}
+complete_mental_health_data <- mental_health_data %>%
+  filter(is.na(depression) == FALSE,
+         is.na(anxiety) == FALSE)
+```
+
+## `mutate`
+
+With `mutate()`, you can create new variables. When you're creating new variables, all of the same rules we discussed in 1_Introduction to R apply. For example, if we're creating a new variable called `total_mental_illness` - the sum of `depression` and `anxiety` - we can create it like this (using "base R"):
+
+```{r}
+complete_mental_health_data$total_mental_illness <- complete_mental_health_data$depression + complete_mental_health_data$anxiety
+```
+
+Alternatively, we can use `mutate()` to create it like this:
+
+```{r}
+complete_mental_health_data <- complete_mental_health_data %>%
+  mutate(total_mental_illness = depression + anxiety)
+```
+
+(Note that in the above chunk we have _overwritten_ `complete_mental_health_data` by making a new object with the same name.)
+
+## `group_by` and `summarize`
+
+You should recognize `group_by()` and `summarize()` from 2_Data Description. `group_by()` lets you organize your data by group, while `summarize()` lets you calculate summary statistics from your data (by group or for your dataset as a whole).
+
+> **HW: Create a new variable that indicates whether somebody received either therapy _or_ medication in the past year. Hint: You can check if either `past_year_therapy` is `1` or `past_year_medication` is `1` with this code:**
+
+past_year_therapy == 1 | past_year_medication == 1
+
+> **Name your new variable `any_treatment` and save it in a new dataset called `new_data` (10 Points).**
+
+```{r}
+# Your code here
+new_data <- complete_mental_health_data %>%
+  mutate(any_treatment = past_year_therapy == 1 | past_year_medication == 1)
+
+new_data %>%
+  count(anxiety, any_treatment)
+```
+
+> **How many college students received any mental health treatment in the past year? (5 Points)**
+
+```{r}
+# Your code here
+
+```
+
+> **Now, using the skills you picked up in 2_Data Description, produce some summary statistic using the mental health variables in your new dataset. The statistic is up to you! (5 Points)**
+
+```{r}
+# Your code here
+
+```

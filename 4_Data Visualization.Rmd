@@ -1,0 +1,122 @@
+---
+title: "4_Data Visualization"
+author: "Your Name Here"
+output: pdf_document
+---
+
+Visualizing data in R is generally done using the package `ggplot2`. `ggplot2` is a part of the "tidyverse," so we can load it like this:
+
+```{r}
+library(tidyverse)
+```
+
+Let's load our data too.
+
+```{r}
+library(here)
+data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
+```
+
+The "gg" in `ggplot2` stands for "grammar of graphics." The "grammar of graphics" refers to the idea that you can build every graph from the same three basic things:
+
+1. A **dataset**
+2. A system of **coordinates** to put the data on
+3. One or more objects (e.g., dots, lines) that represent the data - in R, we call these objects "**`geom`**s"
+
+Let's see what this means. Let's say we wanted to graph the relationship between age (`age`) and feelings of campus belonging (`belonging`). First, we give our **dataset** to the `ggplot()` function. Before that, let's remove `NA values`. 
+
+```{r}
+data_to_plot <- data %>%
+  select(age, belonging) %>%
+  drop_na()
+
+ggplot(data = data_to_plot)
+```
+
+This gives us a... totally blank slate. Now, let's give it the coordinate system we want: the range of possible values of age (which we will plot on the x-axis) and belonging (which we will plot on the y-axis). These are known as "aesthetics", and written inside the `aes()` function like this:
+
+```{r}
+ggplot(data = data_to_plot, 
+       mapping = aes(
+         x = age, 
+         y = belonging)
+       )
+```
+
+Now we can see our coordinates. Finally, let's plot our data using points.
+
+NOTE: For whatever reason, `ggplot2` asks that we combine our graph elements with `+`'s, like so.
+
+```{r}
+ggplot(data = data_to_plot, 
+       mapping = aes(
+         x = age, 
+         y = belonging)
+       ) +
+  geom_point()
+```
+
+That's a lot of points! Why isn't this useful? Well, it turns out that there is at least one person at every level of age with every possible value of belonging. We need to summarize our data first.
+
+```{r}
+summarized_data <- data_to_plot %>%
+  group_by(age) %>%
+  summarize(mean_belonging = mean(belonging))
+
+print(head(summarized_data))
+
+ggplot(data = summarized_data, 
+       mapping = aes(
+         x = age, 
+         y = mean_belonging)
+       ) +
+  geom_point()
+```
+
+There we go! This clearly shows a strong relationship between age and belonging, where older students feel like they belong less. Moreover, each additional year is associated with less belonging until around 25, at which point belonging levels off.
+
+Once you have your basic plot, you can customize it any way you want. The Posit primer on data visualization has more information about this - you can find it at the "Primers" button on the left and at https://posit.cloud/learn/primers/3. To start us off, I'm going to add a title, tweak the axes, and change the dot colors.
+
+```{r}
+ggplot(data = summarized_data, 
+       mapping = aes(
+         x = age, 
+         y = mean_belonging)
+       ) +
+  geom_point(color = "orange") +
+  scale_y_continuous(name = "Social Belonging on Campus",
+                     limits = c(3, 5)) +
+  scale_x_continuous(name = "Age",
+                     breaks = c(18, 20, 25, 30, 40, 50)) +
+  ggtitle("Belonging by Age")
+```
+
+Looking good!
+
+Bar/column plots can be a good way to represent data with a categorical variable on the x-axis. For example:
+
+```{r}
+categorical_summary_data <- data %>%
+  group_by(gender) %>%
+  summarize(proportion_anxious = mean(anxiety, na.rm = T))
+
+print(head(categorical_summary_data))
+
+ggplot(data = categorical_summary_data, 
+       mapping = aes(
+         x = gender, 
+         y = proportion_anxious)
+       ) +
+  geom_col()
+```
+
+There are many other types of plots you can make, too. Check the R Graph Gallery for examples and code! https://r-graph-gallery.com/ 
+
+> **HW: Make your own graph. That's it! Using the code above (or the R Graph Gallery), graph the relationship between two variables. You might want to create a dataset of summary statistics (e.g., mean of Y by X) to give to `ggplot()`. (20 Points)**
+
+> **One bonus point for using a `geom` other than a point or a bar (look here for more options: https://r-graph-gallery.com/), and a second bonus point for customizing your plot's title, axes, colors, etc.**
+
+```{r}
+# Your code here
+
+```

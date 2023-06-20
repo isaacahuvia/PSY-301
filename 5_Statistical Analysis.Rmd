@@ -1,0 +1,203 @@
+---
+title: "5_Statistical Analysis"
+author: "Your Name Here"
+output: pdf_document
+---
+
+By now, you know how to describe, clean, and visualize data. The last step is to use the statistical tests we learned in class to draw formal conclusions from our data. This assignment walks you through some basic data analysis tasks.
+
+```{r}
+library(tidyverse)
+library(here)
+
+data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
+```
+
+For most statistical tests, you can't have any missing or `NA` values. In the "real world," statisticians use a variety of techniques to fill in (or "impute") missing data. But for now, let's just drop our missing values:
+
+```{r}
+complete_data <- drop_na(data)
+```
+
+Now let's talk statistical tests. For more information about these tests, please refer to lecture or to your textbook!
+
+# Testing Differences
+
+## Testing Means with One or Two Groups: _t_-Test
+
+One of the simplest tests we use in statistics is the _t_-test. The _t_-test is a test of _means_. You can use it to test whether a true mean is different from a certain number (the "one-sample" _t_-test) or to test whether two means are different (the "two-sample" _t_-test). In either case, your dependent variable (the variable whose mean you're interested in) has to be continuous. 
+
+### Example: One-Sample _t_-Test
+
+RQ: Is the mean age (continuous DV) of our sample greater than 21?
+
+Test:
+
+```{r}
+t.test(
+  x = complete_data$age,
+  mu = 21,
+  alternative = "two.sided"
+)
+```
+
+
+NOTE: For very small numbers, R uses "scientific notation", with "`e-XX`" at the end of the number. The number after the "e" tells you how many points to move the decimal to the left. For example, `5.000e-10` would actually equal `.0000000005`. Suffice to say, if you see an `e`, it's probably a small number!
+
+The mean age in our sample was 22.9, with a 95% confidence interval of (22.9, 23.0). Our _p_-value was less than .001. From this, we conclude that the true mean age of college students is greater than 21. 
+
+### Example: Two-Sample _t_-Test
+
+RQ: Is the mean level of depression symptom severity (continuous DV) different for U.S. citizens and non-citizens (categorical IV with two groups)?
+
+Test:
+
+```{r}
+t.test(
+  x = complete_data$depression_severity[complete_data$citizen == TRUE],
+  y = complete_data$depression_severity[complete_data$citizen == FALSE]
+)
+```
+
+The average depression symptom severity for U.S. citizens (9.6) was significantly different from that for non-citizens (8.7). The _p_-value was less than .001. From this, we conclude that the average U.S. citizen college student is more depressed than the average non-citizen student - at least, according to this measure of depression symptoms!
+
+## Testing Means with More than Two Groups: ANOVA
+
+An ANOVA is similar to a _t_-test, but can be used with more than two groups. The ANOVA tests whether there is significant variance between the groups that can't be explained by random chance alone. 
+
+### Example: ANOVA
+
+RQ: Does campus belonging (continuous DV) depend on gender (categorical IV with three categories)?
+
+```{r}
+anova <- aov(data = complete_data, formula = belonging ~ gender)
+
+summary(anova)
+```
+
+With a _p_-value that small, we can conclude that mean levels of belonging vary significantly across gender groups - more than we would expect due to random chance alone. ANOVA doesn't tell us _how_ the groups are different, however. To do that, we can look to descriptive statistics:
+
+```{r}
+complete_data %>%
+  group_by(gender) %>%
+  summarize(mean_belonging = mean(belonging))
+```
+
+## Testing Proportions Across Groups: Chi-Square Test (and _z_-Test)
+
+You use the chi-square test to compare proportions between two groups. The chi-square test does this by calculating a contingency table of your independent (grouping) variable and your dependent variable, and comparing this table to what you would expect if the two variables were totally unrelated. 
+
+### Example: Chi-Square Test
+
+RQ: Does depression (categorical DV) depend on the grades students get (categorical IV)?
+
+```{r}
+depression_by_grades <- table(complete_data$depression, complete_data$grades)
+
+print(depression_by_grades)
+
+chisq.test(depression_by_grades)
+```
+
+With a _p_-value that small, we can definitely conclude that being depressed is associated with the grades you get. As with ANOVA, this doesn't tell us _how_ the groups are different, only that they are. To understand how this relationship really works, we need to come up with descriptive statistics too:
+
+```{r}
+complete_data %>%
+  group_by(grades) %>%
+  summarize(proportion_depressed = mean(depression))
+```
+
+### Example: _z_-Test
+
+The _z_-test does the same thing as the chi-square test, but looks more like a _t_-test. Note that the _p_-values here are the same:
+
+```{r}
+grades_by_depression <- table(complete_data$grades, complete_data$depression)
+
+prop.test(grades_by_depression)
+```
+
+# Testing Relationships
+
+So far we have explored ways to test differences _between_ groups. But what if you want to test the relationship between two variables _within_ a group (or for your whole sample)?
+
+## Testing Relationships Between Two Continuous Variables: Correlation
+
+The simplest way to test the relationship between two variables is with correlation. The correlation coefficient is a measure of the strength and direction of the relationship between two variables. A correlation of 0 means _no relationship_, while a correlation closer to 1 indicates a _stronger relationship_. A positive correlation means that when one variable goes up, the other variable also goes up (and that when one variable goes down, the other variable also goes down). A negative correlation means that when one variable goes up, the other variable goes down. 
+
+### Example: Correlation
+
+RQ: What is the relationship between belonging (continuous variable) and anxiety symptom severity (continuous variable) among college students?
+
+```{r}
+cor.test(
+  x = complete_data$belonging, 
+  y = complete_data$anxiety_severity
+)
+```
+
+This result tells us that there is a small, negative (_r_ = -.21) correlation between belonging and anxiety severity; when students feel like they belong _more_, they tend to be _less_ anxious. You can also see this visually:
+
+```{r}
+complete_data %>%
+  ggplot(aes(belonging, anxiety_severity)) +
+  stat_summary(fun = mean) +
+  ggtitle("Mean Anxiety Severity by Belonging")
+```
+
+## Testing Relationships With a Continuous Dependent Variable: Linear Regression
+
+Linear regression is a more flexible form of regression. You can use linear regression to test the relationship between any kind of independent variable and a continuous dependent variable.
+
+### Example: Linear Regression
+
+RQ: What is the relationship between medication use (categorical IV) and depression severity (continuous DV)?
+
+```{r}
+linear_regression <- lm(
+  data = complete_data,
+  formula = depression_severity ~ past_year_medication
+)
+
+summary(linear_regression)
+```
+
+Taking medication for mental health problems in the past year is associated with a 3.8 unit increase in depression symptom severity (_p_ < .001).
+
+### Example: Linear Regression with Multiple IVs
+
+As we will talk about in our final class, you can also use linear regression with _multiple_ independent variables. You do this to test the relationship between an IV and a DV, after controlling for another variable (or variables). 
+
+RQ: What is the relationship between financial stress (continuous IV) and depression symptom severity (continuous DV), after controlling for age and gender?
+
+```{r}
+multiple_regression <- lm(
+  data = complete_data,
+  formula = depression_severity ~ financial_stress + age + gender
+)
+
+summary(multiple_regression)
+```
+
+After controlling for age and gender, a one-unit increase in financial stress is associated with a 1.9-unit increase in depression symptom severity (_p_ < .001).
+
+> **HW: Using a _t_-test, test whether mean levels of depression symptom severity are different for students who did and didn't see a therapist in the past year. What do your results tell you? (5 Points)**
+
+```{r}
+# Your code here
+
+```
+
+> **HW: Using a correlation test, test whether depression severity is related to anxiety severity. What do your results tell you? (5 Points)**
+
+```{r}
+# Your code here
+
+```
+
+> **HW: Freestyle! Write your own research question and answer it using the appropriate test. What do your results tell you? Supplement your findings with descriptive statistics and/or a visualization for an extra point. (10 Points)**
+
+```{r}
+# Your code here
+
+```

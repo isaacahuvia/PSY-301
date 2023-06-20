@@ -173,5 +173,10 @@ data %>%
 
 ```{r}
 # Your code here
+data %>%
+  summarize(proportion_depressed = mean(x = depression, na.rm = T))
 
+data %>%
+  group_by(grades) %>%
+  summarize(proportion_depressed = mean(x = depression, na.rm = T))
 ```
