@@ -23,11 +23,11 @@ Now let's talk statistical tests. For more information about these tests, please
 
 # Testing Differences
 
-## Testing Means with One or Two Groups: _t_-Test
+## Testing Means with One or Two Groups: *t*-Test
 
-One of the simplest tests we use in statistics is the _t_-test. The _t_-test is a test of _means_. You can use it to test whether a true mean is different from a certain number (the "one-sample" _t_-test) or to test whether two means are different (the "two-sample" _t_-test). In either case, your dependent variable (the variable whose mean you're interested in) has to be continuous. 
+One of the simplest tests we use in statistics is the *t*-test. The *t*-test is a test of *means*. You can use it to test whether a true mean is different from a certain number (the "one-sample" *t*-test) or to test whether two means are different (the "two-sample" *t*-test). In either case, your dependent variable (the variable whose mean you're interested in) has to be continuous.
 
-### Example: One-Sample _t_-Test
+### Example: One-Sample *t*-Test
 
 RQ: Is the mean age (continuous DV) of our sample greater than 21?
 
@@ -41,12 +41,11 @@ t.test(
 )
 ```
 
-
 NOTE: For very small numbers, R uses "scientific notation", with "`e-XX`" at the end of the number. The number after the "e" tells you how many points to move the decimal to the left. For example, `5.000e-10` would actually equal `.0000000005`. Suffice to say, if you see an `e`, it's probably a small number!
 
-The mean age in our sample was 22.9, with a 95% confidence interval of (22.9, 23.0). Our _p_-value was less than .001. From this, we conclude that the true mean age of college students is greater than 21. 
+The mean age in our sample was 22.9, with a 95% confidence interval of (22.9, 23.0). Our *p*-value was less than .001. From this, we conclude that the true mean age of college students is greater than 21.
 
-### Example: Two-Sample _t_-Test
+### Example: Two-Sample *t*-Test
 
 RQ: Is the mean level of depression symptom severity (continuous DV) different for U.S. citizens and non-citizens (categorical IV with two groups)?
 
@@ -59,11 +58,11 @@ t.test(
 )
 ```
 
-The average depression symptom severity for U.S. citizens (9.6) was significantly different from that for non-citizens (8.7). The _p_-value was less than .001. From this, we conclude that the average U.S. citizen college student is more depressed than the average non-citizen student - at least, according to this measure of depression symptoms!
+The average depression symptom severity for U.S. citizens (9.6) was significantly different from that for non-citizens (8.7). The *p*-value was less than .001. From this, we conclude that the average U.S. citizen college student is more depressed than the average non-citizen student - at least, according to this measure of depression symptoms!
 
 ## Testing Means with More than Two Groups: ANOVA
 
-An ANOVA is similar to a _t_-test, but can be used with more than two groups. The ANOVA tests whether there is significant variance between the groups that can't be explained by random chance alone. 
+An ANOVA is similar to a *t*-test, but can be used with more than two groups. The ANOVA tests whether there is significant variance between the groups that can't be explained by random chance alone.
 
 ### Example: ANOVA
 
@@ -75,7 +74,7 @@ anova <- aov(data = complete_data, formula = belonging ~ gender)
 summary(anova)
 ```
 
-With a _p_-value that small, we can conclude that mean levels of belonging vary significantly across gender groups - more than we would expect due to random chance alone. ANOVA doesn't tell us _how_ the groups are different, however. To do that, we can look to descriptive statistics:
+With a *p*-value that small, we can conclude that mean levels of belonging vary significantly across gender groups - more than we would expect due to random chance alone. ANOVA doesn't tell us *how* the groups are different, however. To do that, we can look to descriptive statistics:
 
 ```{r}
 complete_data %>%
@@ -83,9 +82,9 @@ complete_data %>%
   summarize(mean_belonging = mean(belonging))
 ```
 
-## Testing Proportions Across Groups: Chi-Square Test (and _z_-Test)
+## Testing Proportions Across Groups: Chi-Square Test (and *z*-Test)
 
-You use the chi-square test to compare proportions between two groups. The chi-square test does this by calculating a contingency table of your independent (grouping) variable and your dependent variable, and comparing this table to what you would expect if the two variables were totally unrelated. 
+You use the chi-square test to compare proportions between two groups. The chi-square test does this by calculating a contingency table of your independent (grouping) variable and your dependent variable, and comparing this table to what you would expect if the two variables were totally unrelated.
 
 ### Example: Chi-Square Test
 
@@ -99,7 +98,7 @@ print(depression_by_grades)
 chisq.test(depression_by_grades)
 ```
 
-With a _p_-value that small, we can definitely conclude that being depressed is associated with the grades you get. As with ANOVA, this doesn't tell us _how_ the groups are different, only that they are. To understand how this relationship really works, we need to come up with descriptive statistics too:
+With a *p*-value that small, we can definitely conclude that being depressed is associated with the grades you get. As with ANOVA, this doesn't tell us *how* the groups are different, only that they are. To understand how this relationship really works, we need to come up with descriptive statistics too:
 
 ```{r}
 complete_data %>%
@@ -107,9 +106,9 @@ complete_data %>%
   summarize(proportion_depressed = mean(depression))
 ```
 
-### Example: _z_-Test
+### Example: *z*-Test
 
-The _z_-test does the same thing as the chi-square test, but looks more like a _t_-test. Note that the _p_-values here are the same:
+The *z*-test does the same thing as the chi-square test, but looks more like a *t*-test. Note that the *p*-values here are the same:
 
 ```{r}
 grades_by_depression <- table(complete_data$grades, complete_data$depression)
@@ -119,11 +118,11 @@ prop.test(grades_by_depression)
 
 # Testing Relationships
 
-So far we have explored ways to test differences _between_ groups. But what if you want to test the relationship between two variables _within_ a group (or for your whole sample)?
+So far we have explored ways to test differences *between* groups. But what if you want to test the relationship between two variables *within* a group (or for your whole sample)?
 
 ## Testing Relationships Between Two Continuous Variables: Correlation
 
-The simplest way to test the relationship between two variables is with correlation. The correlation coefficient is a measure of the strength and direction of the relationship between two variables. A correlation of 0 means _no relationship_, while a correlation closer to 1 indicates a _stronger relationship_. A positive correlation means that when one variable goes up, the other variable also goes up (and that when one variable goes down, the other variable also goes down). A negative correlation means that when one variable goes up, the other variable goes down. 
+The simplest way to test the relationship between two variables is with correlation. The correlation coefficient is a measure of the strength and direction of the relationship between two variables. A correlation of 0 means *no relationship*, while a correlation closer to 1 indicates a *stronger relationship*. A positive correlation means that when one variable goes up, the other variable also goes up (and that when one variable goes down, the other variable also goes down). A negative correlation means that when one variable goes up, the other variable goes down.
 
 ### Example: Correlation
 
@@ -136,7 +135,7 @@ cor.test(
 )
 ```
 
-This result tells us that there is a small, negative (_r_ = -.21) correlation between belonging and anxiety severity; when students feel like they belong _more_, they tend to be _less_ anxious. You can also see this visually:
+This result tells us that there is a small, negative (*r* = -.21) correlation between belonging and anxiety severity; when students feel like they belong *more*, they tend to be *less* anxious. You can also see this visually:
 
 ```{r}
 complete_data %>%
@@ -162,11 +161,11 @@ linear_regression <- lm(
 summary(linear_regression)
 ```
 
-Taking medication for mental health problems in the past year is associated with a 3.8 unit increase in depression symptom severity (_p_ < .001).
+Taking medication for mental health problems in the past year is associated with a 3.8 unit increase in depression symptom severity (*p* \< .001).
 
 ### Example: Linear Regression with Multiple IVs
 
-As we will talk about in our final class, you can also use linear regression with _multiple_ independent variables. You do this to test the relationship between an IV and a DV, after controlling for another variable (or variables). 
+As we will talk about in our final class, you can also use linear regression with *multiple* independent variables. You do this to test the relationship between an IV and a DV, after controlling for another variable (or variables).
 
 RQ: What is the relationship between financial stress (continuous IV) and depression symptom severity (continuous DV), after controlling for age and gender?
 
@@ -179,9 +178,9 @@ multiple_regression <- lm(
 summary(multiple_regression)
 ```
 
-After controlling for age and gender, a one-unit increase in financial stress is associated with a 1.9-unit increase in depression symptom severity (_p_ < .001).
+After controlling for age and gender, a one-unit increase in financial stress is associated with a 1.9-unit increase in depression symptom severity (*p* \< .001).
 
-> **HW: Using a _t_-test, test whether mean levels of depression symptom severity are different for students who did and didn't see a therapist in the past year. What do your results tell you? (5 Points)**
+> **HW: Using a *t*-test, test whether mean levels of depression symptom severity are different for students who did and didn't see a therapist in the past year. What do your results tell you? (5 Points)**
 
 ```{r}
 # Your code here

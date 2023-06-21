@@ -84,16 +84,16 @@ past_year_therapy == 1 | past_year_medication == 1
 # Your code here
 new_data <- complete_mental_health_data %>%
   mutate(any_treatment = past_year_therapy == 1 | past_year_medication == 1)
-
-new_data %>%
-  count(anxiety, any_treatment)
 ```
 
 > **How many college students received any mental health treatment in the past year? (5 Points)**
 
 ```{r}
 # Your code here
+new_data %>%
+  count(any_treatment)
 
+mean(new_data$any_treatment, na.rm = T)
 ```
 
 > **Now, using the skills you picked up in 2_Data Description, produce some summary statistic using the mental health variables in your new dataset. The statistic is up to you! (5 Points)**
