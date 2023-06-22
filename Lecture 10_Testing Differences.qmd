@@ -154,9 +154,9 @@ We have our *sample* means. We have our *sample* distributions. What do we need 
 
 . . .
 
-We need to know what we would see if we took *many different* samples. We need __sampling distributions__!
+We need to know what we would see if we took *many different* samples. We need **sampling distributions**!
 
-## Sampling Distribution of $x_1$
+## Sampling Distribution of $\mu_1$
 
 ```{r}
 #| echo: true
@@ -199,7 +199,7 @@ sampling_distribution_men <- rnorm(
 )
 ```
 
-## Sampling Distribution of $x_1$
+## Sampling Distribution of $\mu_1$
 
 ```{r}
 #| echo: true
@@ -210,7 +210,7 @@ tibble(sampling_distribution_men) %>%
   geom_vline(aes(xintercept = mean_financial_stress_men - (1.96 * se_financial_stress_men)))
 ```
 
-## Sampling Distribution of $x_2$
+## Sampling Distribution of $\mu_2$
 
 ```{r}
 #| echo: true
@@ -253,7 +253,7 @@ sampling_distribution_women <- rnorm(
 )
 ```
 
-## Sampling Distribution of $x_2$
+## Sampling Distribution of $\mu_2$
 
 ```{r}
 #| echo: true
@@ -350,7 +350,7 @@ t.test(
 
 ## Reporting the Test
 
-In our sample, women experienced more financial stress (mean = 3.25, s.d. = 1.11) than men (mean = 3.00, s.d. = 1.13). We used a *t*-test to test whether this sample difference reflects a true difference in the population means. Our null hypothesis was that there would be no difference in population means. Our alternative hypothesis was that there would be some difference in population means. With a *p*-value < .001, we reject the null hypothesis and conclude that there is a true difference in the population means.
+In our sample, women experienced more financial stress (mean = 3.25, s.d. = 1.11) than men (mean = 3.00, s.d. = 1.13). We used a *t*-test to test whether this sample difference reflects a true difference in the population means. Our null hypothesis was that there would be no difference in population means. Our alternative hypothesis was that there would be some difference in population means. With a *p*-value \< .001, we reject the null hypothesis and conclude that there is a true difference in the population means.
 
 ## Visualizing the Difference
 
@@ -502,7 +502,7 @@ clean_data %>%
   summarize(proportion_anxious = mean(anxiety))
 ```
 
-## The Chi-Square Statistic
+The Chi-Square Statistic
 
 The "chi square statistic" represents the difference between the observed frequency of our $DV$ at different levels of the $IV$, and what we would expect to see if there was no relationship between the two variables. Like any statistic, it has its own sampling distribution.
 
@@ -535,6 +535,10 @@ chisq.test(anxiety_by_grades)
 . . .
 
 If the null hypothesis were true, what how likely would we be to see a chi square statistic at least as large as 640.8?
+
+## Reporting the Test
+
+In our sample, students with worse grades tended to experience anxiety more frequently. For example, 36% of students who typically received A's had clinical levels of anxiety symptoms, while 67% of students who typically receive F's did. We used a chi square test to test whether this sample difference reflects a true difference in the population proportions. Our null hypothesis was that there the frequency of anxiety does not depend on grades in the full population. Our alternative hypothesis was that the frequency of anxiety *does* depend on grades in the full population. With a *p*-value \< .001, we reject the null hypothesis and conclude that the frequency of anxiety really does depend on grades among the full population of college students.
 
 ## Visualizing the Difference
 
