@@ -17,9 +17,9 @@ set.seed(452807)
 
 -   Independent variable (a.k.a. $IV$, a.k.a. $X$): The variable whose variation we're interested in
 
--   E.g., Does depression symptom severity (DV) *depend on* age (IV)?
+-   E.g., Does depression symptom severity ($DV$) *depend on* age ($IV$)?
 
--   E.g., Does campus belonging (DV) *depend on* citizenship (IV)?
+-   E.g., Does campus belonging ($DV$) *depend on* citizenship ($IV$)?
 
 ## Testing Relationships
 
@@ -32,7 +32,7 @@ set.seed(452807)
 ## Getting Started
 
 ```{r}
-#| echo: true
+#| echo = T
 # Load packages
 library(tidyverse)
 library(here)

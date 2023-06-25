@@ -7,15 +7,19 @@ editor: visual
 embed-resources: true
 ---
 
+```{r}
+set.seed(546767)
+```
+
 ## Variables
 
 -   Dependent variable (a.k.a. $DV$, a.k.a. $Y$): The variable that *depends on* the independent variable
 
 -   Independent variable (a.k.a. $IV$, a.k.a. $X$): The variable whose variation we're interested in
 
--   E.g., Does depression symptom severity (DV) *depend on* gender (IV)?
+-   E.g., Does depression symptom severity ($DV$) depend on gender ($IV$)?
 
--   E.g., Do grades (DV) *depend on* depression symptom severity (IV)?
+-   E.g., Do grades ($DV$) depend on depression symptom severity ($IV$)?
 
 ## Testing Relationships
 
@@ -28,11 +32,7 @@ embed-resources: true
 ## Getting Started
 
 ```{r}
-set.seed(546767)
-```
-
-```{r}
-#| echo: true
+#| echo = T
 # Load packages
 library(tidyverse)
 library(here)
@@ -64,7 +64,7 @@ In a population: $E(Y) = \beta_0 + \beta_1X + \epsilon$
 
 . . .
 
-In a sample: $E(Y) = \beta_0 + \beta_1X + \epsilon$
+In a sample: $\hat{Y} = b_0 + b_1X + e$
 
 ## Visualizing the Linear Model (Recap)
 
@@ -78,9 +78,9 @@ tiny_data %>%
 
 . . .
 
-$E(Y) = \beta_0 + \beta_1X + \epsilon$
+$\hat{Y} = b_0 + b_1X + e$
 
-## Linear Regression in R
+## Linear Regression in R (Recap)
 
 ```{r}
 #| echo = T
@@ -104,7 +104,7 @@ The linear model doesn't just have to represent the relationship between *one* $
 
 . . .
 
-E.g., the relationship between financial stress (\$X_1\$), gender (\$X_2\$), and depression symptom severity (\$Y\$)
+E.g., the relationship between financial stress ($X_1$), gender ($X_2$), and depression symptom severity ($Y$)
 
 . . .
 
@@ -127,13 +127,13 @@ summary(multiple_lm)
 
 ## Visualizing Multiple Linear Regression
 
-\[parallel slopes\]
-
 ```{r}
+library(moderndive)
+
 tiny_data %>%
-  ggplot(aes(x = financial_stress, y = depression_severity)) +
+  ggplot(aes(x = financial_stress, y = depression_severity, group = gender, color = gender)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+  geom_parallel_slopes(se = F)
 ```
 
 ## Interaction Terms in Linear Regression
@@ -142,7 +142,7 @@ The linear model can also represent the *interaction* between two variables: whe
 
 . . .
 
-E.g., the relationship between financial stress (\$X_1\$), gender (\$X_2\$), and their interaction (\$X_1X_2\$) and depression symptom severity ($Y$)
+E.g., the relationship between financial stress ($X_1$), gender ($X_2$), and their interaction ($X_1X_2$) and depression symptom severity ($Y$)
 
 . . .
 
@@ -152,9 +152,25 @@ $E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_1X_1\beta_2X_2 + \epsilon$
 
 $\hat{Y} = b_0 + b_1X_1 + b_2X_2 + b_1X_1b_2X_2 e$
 
+## Interaction Terms in R
+
+```{r}
+#| echo = T
+interaction_lm <- lm(data = tiny_data, depression_severity ~ financial_stress + gender + financial_stress*gender)
+
+summary(interaction_lm)
+```
+
 ## Interpreting Interaction Terms
 
 ## Visualizing Interaction Terms
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = financial_stress, y = depression_severity, group = gender, color = gender)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
 
 ## Polynomial Terms in Linear Regression
 
@@ -162,7 +178,7 @@ The linear model can also represent polynomial (i.e., curved) relationships betw
 
 . . .
 
-E.g., the quadratic relationship between age (\$X_1\$) and depression symptom severity (\$Y\$)
+E.g., the quadratic relationship between age ($X_1$) and depression symptom severity ($Y$)
 
 . . .
 
@@ -172,8 +188,26 @@ $E(Y) = \beta_0 + \beta_1X_1 + \beta_1X_1^2 + \epsilon$
 
 $\hat{Y} = b_0 + b_1X_1 + b_1X_1^2 + e$
 
+## Polynomial Terms in R
+
+```{r}
+#| echo = T
+clean_data$age_squared <- clean_data$age^2
+
+polynomial_lm <- lm(data = clean_data, belonging ~ age + age_squared)
+
+summary(polynomial_lm)
+```
+
 ## Interpreting Polynomial Terms
 
 ## Visualizing Polynomial Terms
+
+```{r}
+clean_data %>%
+  ggplot(aes(x = age, y = belonging)) +
+  stat_summary() +
+  geom_smooth(method = "lm", formula = "y ~ poly(x, 2)", se = F)
+```
 
 ## Logistic Regression
