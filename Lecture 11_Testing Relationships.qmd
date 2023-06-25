@@ -55,7 +55,7 @@ str(tiny_data)
 
 Correlation: Measures the relationship between two continuous variables, and tests whether the two variables are related.
 
-## Correlation 
+## Correlation
 
 -   Positive correlation: When one variable increases, the other variable also increases; when one variable decreases, the other variable also decreases (e.g., time studying and performance on an exam).
 
@@ -173,6 +173,8 @@ curve(dnorm(x, mean = 0, sd = se),
 cor.test(tiny_data$depression_severity, tiny_data$anxiety_severity)
 ```
 
+. . .
+
 If the null hypothesis were true, how likely would we be to see a correlation coefficient as large as .89?
 
 ## Confidence Intervals
@@ -214,7 +216,7 @@ tibble(simulated_rs) %>%
 
 ## Reporting the Test
 
-In our sample, we found a strong positive correlation between depression symptom severity and anxiety symptom severity (*r* = .89). We conducted a correlation test to test whether this observed relationship indicates a true relationship in the population. The null hypothesis was that there was no true correlation between these variables in the population. With a p-value < .001, we reject the null hypothesis and conclude that depression symptom severity and anxiety symptom severity are positively correlated among the full population of college students. In addition, we are 95% certain that the true correlation coefficient falls between .75 and .96.
+In our sample, we found a strong positive correlation between depression symptom severity and anxiety symptom severity (*r* = .89). We conducted a correlation test to test whether this observed relationship indicates a true relationship in the population. The null hypothesis was that there was no true correlation between these variables in the population. With a p-value \< .001, we reject the null hypothesis and conclude that depression symptom severity and anxiety symptom severity are positively correlated among the full population of college students. In addition, we are 95% certain that the true correlation coefficient falls between .75 and .96.
 
 ## Visualizing the Test
 
@@ -272,21 +274,7 @@ tiny_data %>%
 
 $E(Y) = \beta_0 + \beta_1X + \epsilon$
 
-## Visualizing the Linear Model
-
-- What is $E(Y)$?
-- What is $\beta_0$?
-- What is $\beta_1X$?
-- What is $\epsilon$?
-
 ## Estimating the Linear Model
-
-```{r}
-tiny_data %>%
-  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = "y ~ x", se = F)
-```
 
 Just like the population mean $\mu$ is estimated with $\bar{x}$, our population coefficients $\beta$ are estimated with $b$.
 
@@ -309,11 +297,11 @@ tiny_data %>%
   geom_smooth(method = "lm", formula = "y ~ x", se = F)
 ```
 
-The linear model is unique because it accounts for "error" - all of the confounding factors that keep us from having a perfect 1:1 relationship between $X$ (our $IV$) and $Y$ (our $DV$). 
+The linear model is unique because it accounts for "error" - all of the confounding factors that keep us from having a perfect 1:1 relationship between $X$ (our $IV$) and $Y$ (our $DV$).
 
 . . .
 
-When we estimate a linear model with our dataset, we can actually see what these errors are. We call these errors "residuals" and refer to them with $e$. 
+When we estimate a linear model with our dataset, we can actually see what these errors are. We call these errors "residuals" and refer to them with $e$.
 
 ## Error in the Linear Model
 
@@ -328,14 +316,14 @@ In fact, error is so essential to the linear model that we can't estimate our mo
 
 ## Assumptions in the Linear Model
 
-There are many assumptions that we make when we use a linear model. I would like to focus on __two__:
+There are many assumptions that we make when we use a linear model. I would like to focus on **two**:
 
-1. The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is _linear_
-2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+1.  The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is *linear*
+2.  Our residuals represent *random error*: they are normally distributed and don't depend on $X$
 
 ## Assumptions in the Linear Model
 
-1. The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is _linear_
+1.  The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is *linear*
 
 ```{r}
 tiny_data %>%
@@ -346,7 +334,7 @@ tiny_data %>%
 
 ## Assumptions in the Linear Model
 
-2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+2.  Our residuals represent *random error*: they are normally distributed and don't depend on $X$
 
 ```{r}
 tiny_data %>%
@@ -357,7 +345,7 @@ tiny_data %>%
 
 ## Assumptions in the Linear Model
 
-2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+2.  Our residuals represent *random error*: they are normally distributed and don't depend on $X$
 
 ```{r}
 #| echo = T
@@ -369,7 +357,7 @@ hist(residuals)
 
 ## Assumptions in the Linear Model
 
-2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+2.  Our residuals represent *random error*: they are normally distributed and don't depend on $X$
 
 ```{r}
 #| echo = T
@@ -381,10 +369,10 @@ plot(tiny_data$depression_severity, residuals)
 
 ## Recap
 
-- The linear model describes the linear relationship between $X$ (our $IV$) and $Y$ (our $DV$)
-- We estimate the regression line by finding the line that minimizes the residuals
-- We're interested in learning about $\beta$ - the slope between $X$ and $Y$
-- The relationship between $X$ and $Y$ has to be linear, and our residuals have to be totally random
+-   The linear model describes the linear relationship between $X$ (our $IV$) and $Y$ (our $DV$)
+-   We estimate the regression line by finding the line that minimizes the residuals
+-   We're interested in learning about $\beta:$ the slope between $X$ and $Y$
+-   The relationship between $X$ and $Y$ has to be linear, and our residuals have to be totally random
 
 ## Estimating the Linear Model in R
 
@@ -395,17 +383,25 @@ my_lm <- lm(data = tiny_data, anxiety_severity ~ depression_severity)
 summary(my_lm)
 ```
 
-## Testing our $b$ Coefficient
+$\hat{Y} = b_0 + b_1X + e$
 
-```{r}
-summary(my_lm)
-```
+## The $b$ Statistic
 
-Like any statistic, $b$ has a sampling distribution under $h_0$ that we will use to determine our _p_-value.
+The $b$ statistic (or "coefficient") represents the slope of the line relating $X$ to $Y$
+
+-   Positive relationship: $b > 0$
+
+-   Negative relationship: $b < 0$
+
+-   No relationship: $b = 0$
+
+-   $h_0:b=0$
+
+-   $h_1:b\ne0$
 
 . . .
 
-In addition, $b$ has an observed sampling distribution that we will use to determine its confidence interval.
+Like any statistic, $b$ has a sampling distribution under $h_0$ that we will use to determine our *p*-value.
 
 ## Testing our $b$ Coefficient
 
@@ -421,6 +417,15 @@ curve(dnorm(x, mean = 0, sd = .1281),
 ## Testing our $b$ Coefficient
 
 ```{r}
+#| echo = T
+summary(my_lm)
+```
+
+If the null hypothesis were true, how likely would we be to see a $b$ coefficient as large as .74?
+
+## Confidence Intervals for the $b$ Coefficient
+
+```{r}
 curve(dnorm(x, mean = .7115, sd = .1281), 
       from = -1.5, 
       to = 1.5,
@@ -429,18 +434,16 @@ curve(dnorm(x, mean = .7115, sd = .1281),
       xlab = "b")
 ```
 
-## Testing our $b$ Coefficient
+## Confidence Intervals for the $b$ Coefficient
 
 ```{r}
 #| echo = T
-summary(my_lm)
-
 confint(my_lm)
 ```
 
 ## Reporting the Test
 
-In our sample, we found that a one-unit increase in depression symptom severity was associated with a 0.72-unit increase in anxiety symptom severity (95% CI: 0.44, 0.98). The _p_-value for this test was < .001, indicating that increased depression symptom severity is associated with increased anxiety symptom severity among the full population of college students. Our 95% confidence interval was 0.44, 0.98, indicating that we are 95% certain that a one-unit increase in depression symptom severity is associated with between a 0.44 and a 0.98-unit increase in anxiety symptom severity among the full population.
+In our sample, we found that a one-unit increase in depression symptom severity was associated with a 0.72-unit increase in anxiety symptom severity (95% CI: 0.44, 0.98). The *p*-value for this test was \< .001, indicating that increased depression symptom severity is associated with increased anxiety symptom severity among the full population of college students. In addition, we are 95% certain that a one-unit increase in depression symptom severity is associated with between a 0.44 and a 0.98-unit increase in anxiety symptom severity among the full population.
 
 ## Visualizing the Test
 

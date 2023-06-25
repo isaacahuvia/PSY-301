@@ -28,6 +28,10 @@ embed-resources: true
 ## Getting Started
 
 ```{r}
+set.seed(546767)
+```
+
+```{r}
 #| echo: true
 # Load packages
 library(tidyverse)
@@ -40,18 +44,136 @@ hms_data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
 clean_data <- hms_data %>%
   drop_na()
 
+# Filter data
+tiny_data <- clean_data[sample(nrow(clean_data), 100),]
+
 # Describe data
-str(clean_data)
+str(tiny_data)
 ```
 
--   recap
+## Linear Regression (Recap)
 
--   multiple linear regression
+Linear regression is an extension of correlation. Now, in addition to showing the strength and direction of a relationship, we can:
 
--   polynomials
+1.  Show how much the DV increases/decreases as the IV increases, in units
+2.  Show how much multiple IVs relate to a single DV
 
--   interaction terms
+## The Linear Model (Recap)
 
--   logistic regression
+In a population: $E(Y) = \beta_0 + \beta_1X + \epsilon$
+
+. . .
+
+In a sample: $E(Y) = \beta_0 + \beta_1X + \epsilon$
+
+## Visualizing the Linear Model (Recap)
+
+```{r}
+#| echo = T
+tiny_data %>%
+  ggplot(aes(x = financial_stress, y = depression_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+. . .
+
+$E(Y) = \beta_0 + \beta_1X + \epsilon$
+
+## Linear Regression in R
+
+```{r}
+#| echo = T
+my_lm <- lm(data = tiny_data, depression_severity ~ financial_stress)
+
+summary(my_lm)
+```
+
+$\hat{Y} = b_0 + b_1X + e$
+
+## Linear Regression Summary (Recap)
+
+-   The linear model describes the linear relationship between $X$ (our $IV$) and $Y$ (our $DV$)
+-   We estimate the regression line by finding the line that minimizes the residuals
+-   We're interested in learning about $\beta:$ the slope between $X$ and $Y$
+-   The relationship between $X$ and $Y$ has to be linear, and our residuals have to be totally random
 
 ## Multiple Linear Regression
+
+The linear model doesn't just have to represent the relationship between *one* $IV$ and our $DV$. Instead, we can look at *multiple* $IV$s at the same time.
+
+. . .
+
+E.g., the relationship between financial stress (\$X_1\$), gender (\$X_2\$), and depression symptom severity (\$Y\$)
+
+. . .
+
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \epsilon$
+
+. . .
+
+$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + e$
+
+## Multiple Linear Regression in R
+
+```{r}
+#| echo = T
+multiple_lm <- lm(data = tiny_data, depression_severity ~ financial_stress + gender)
+
+summary(multiple_lm)
+```
+
+## Interpreting Multiple Linear Regression
+
+## Visualizing Multiple Linear Regression
+
+\[parallel slopes\]
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = financial_stress, y = depression_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+## Interaction Terms in Linear Regression
+
+The linear model can also represent the *interaction* between two variables: when the effect of one $IV$ on the $DV$ *depends on* another $IV$.
+
+. . .
+
+E.g., the relationship between financial stress (\$X_1\$), gender (\$X_2\$), and their interaction (\$X_1X_2\$) and depression symptom severity ($Y$)
+
+. . .
+
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_1X_1\beta_2X_2 + \epsilon$
+
+. . .
+
+$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + b_1X_1b_2X_2 e$
+
+## Interpreting Interaction Terms
+
+## Visualizing Interaction Terms
+
+## Polynomial Terms in Linear Regression
+
+The linear model can also represent polynomial (i.e., curved) relationships between an $IV$ and $DV$.
+
+. . .
+
+E.g., the quadratic relationship between age (\$X_1\$) and depression symptom severity (\$Y\$)
+
+. . .
+
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_1X_1^2 + \epsilon$
+
+. . .
+
+$\hat{Y} = b_0 + b_1X_1 + b_1X_1^2 + e$
+
+## Interpreting Polynomial Terms
+
+## Visualizing Polynomial Terms
+
+## Logistic Regression
