@@ -44,4 +44,14 @@ clean_data <- hms_data %>%
 str(clean_data)
 ```
 
+-   recap
+
+-   multiple linear regression
+
+-   polynomials
+
+-   interaction terms
+
+-   logistic regression
+
 ## Multiple Linear Regression

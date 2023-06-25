@@ -7,15 +7,19 @@ editor: visual
 embed-resources: true
 ---
 
+```{r}
+set.seed(452807)
+```
+
 ## Variables
 
 -   Dependent variable (a.k.a. $DV$, a.k.a. $Y$): The variable that *depends on* the independent variable
 
 -   Independent variable (a.k.a. $IV$, a.k.a. $X$): The variable whose variation we're interested in
 
--   E.g., Does depression symptom severity (DV) *depend on* gender (IV)?
+-   E.g., Does depression symptom severity (DV) *depend on* age (IV)?
 
--   E.g., Do grades (DV) *depend on* depression symptom severity (IV)?
+-   E.g., Does campus belonging (DV) *depend on* citizenship (IV)?
 
 ## Testing Relationships
 
@@ -40,8 +44,410 @@ hms_data <- readRDS(here("Healthy Minds Study", "Clean Data.rds"))
 clean_data <- hms_data %>%
   drop_na()
 
+# Filter data
+tiny_data <- clean_data[sample(nrow(clean_data), 20),]
+
 # Describe data
-str(clean_data)
+str(tiny_data)
 ```
 
 ## Correlation
+
+Correlation: Measures the relationship between two continuous variables, and tests whether the two variables are related.
+
+## Correlation 
+
+-   Positive correlation: When one variable increases, the other variable also increases; when one variable decreases, the other variable also decreases (e.g., time studying and performance on an exam).
+
+-   Negative correlation: When one variable increases, the other variable *decreases* (e.g., birth weight and infant emotional problems).
+
+-   No correlation: When one variable increases, nothing happens to the other variable; they are independent of one another (e.g., shoe size and IQ)
+
+## The Correlation Coefficient
+
+The strength and direction of a correlation is given by the "correlation coefficient," $r$.
+
+-   Positive correlation: $r > 0$, up to $r = 1$
+
+-   Negative correlation: $r < 0$, up to $r = -1$
+
+-   No correlation: $r = 0$
+
+. . .
+
+Correlations closer to 0 are weaker, while correlations closer to -1 or 1 are stronger.
+
+## Visualizing Correlations
+
+![](https://www.mathsisfun.com/data/images/correlation-examples.svg)
+
+Note: Correlations assume that there is a *linear* relationship between $x_1$ and $x_2$.
+
+## Visualizing Correlations
+
+```{r}
+#| echo = T
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  ggpubr::stat_cor(aes(label = after_stat(r.label)))
+```
+
+## Correlation Test
+
+Moreover, the correlation coefficient comes with a statistical test.
+
+-   $x_1:$ the first variable
+
+-   $x_2:$ the second variable
+
+-   $r_{x_1,x_2}:$ the correlation between $x_1$ and $x_2$
+
+-   $h_0:$ $r_{x_1,x_2} = 0$
+
+-   $h_1: r_{x_1, x_2} \ne 0$
+
+## Correlation Test
+
+If the *null hypothesis* is that $r_{x_1,x_2}=0$, what does our *p*-value mean?
+
+. . .
+
+$p:$ the probability that we would see a correlation ($r_{x_1,x_2}$) as big as the one we observe if the null hypothesis were true
+
+## The *r* Statistic
+
+The $r$ statistic is calculated by asking: "When one variable goes up, what happens to the other variable?"
+
+$r = \frac{\sum(x_i-\bar{x})(y_i-\bar{y})}{\sum(x_i-\bar{x})^2\sum(y_i-\bar{y})^2}$
+
+-   Positive correlation: $r > 0$, up to $r = 1$
+
+-   Negative correlation: $r < 0$, up to $r = -1$
+
+-   No correlation: $r = 0$
+
+## The *r*-Distribution Under $h_0$
+
+```{r}
+simulate_r <- function(n) {
+  
+  x1 <- rnorm(n = n)
+  x2 <- rnorm(n = n)
+  r <- cor(x1, x2)
+  return(r)
+  
+}
+
+simulated_rs <- replicate(1000, simulate_r(20))
+
+se <- sd(simulated_rs)
+
+curve(dnorm(x, mean = 0, sd = se), 
+      from = -1, 
+      to = 1,
+      main = "Sampling Distribution of r Under the Null Hypothesis, n = 20",
+      ylab = "Density",
+      xlab = "r")
+```
+
+## The *r*-Distribution Under $h_0$
+
+```{r}
+simulated_rs <- replicate(100, simulate_r(1000))
+
+se <- sd(simulated_rs)
+
+curve(dnorm(x, mean = 0, sd = se), 
+      from = -1, 
+      to = 1,
+      main = "Sampling Distribution of r Under the Null Hypothesis, n = 1,000",
+      ylab = "Density",
+      xlab = "r")
+```
+
+## The Test
+
+```{r}
+#| echo = T
+cor.test(tiny_data$depression_severity, tiny_data$anxiety_severity)
+```
+
+If the null hypothesis were true, how likely would we be to see a correlation coefficient as large as .89?
+
+## Confidence Intervals
+
+For tests of relationships, it's usually not enough to just say that there is some positive relationship. Usually, we want to say just how strong (or weak) the relationship is. Our correlation test tells us that there is *some* positive relationship, but how do we say what that relationship is likely to be in the full population? For this, we need to calculate a confidence interval around *r*.
+
+## Confidence Intervals
+
+R gives us a confidence interval along with our correlation test results:
+
+```{r}
+#| echo = T
+cor.test(tiny_data$depression_severity, tiny_data$anxiety_severity)
+```
+
+We can say with 95% certainty that the true population correlation falls between $r = .75$ and $r = .96$.
+
+## Confidence Intervals
+
+We can also calculate this the hard way, by coming up with the sampling distribution for our observed $r$.
+
+```{r}
+bootstrap <- function() {
+  
+  simulated_data <- tiny_data[sample(nrow(tiny_data), 20, replace = T),]
+  r <- cor(simulated_data$depression_severity, simulated_data$anxiety_severity)
+  return(r)
+  
+}
+
+simulated_rs <- replicate(1000, bootstrap())
+
+tibble(simulated_rs) %>%
+  ggplot(aes(simulated_rs)) +
+  geom_density() +
+  ggtitle("Sampling Distribution of r if r = .89, n = 20") +
+  scale_x_continuous("r")
+```
+
+## Reporting the Test
+
+In our sample, we found a strong positive correlation between depression symptom severity and anxiety symptom severity (*r* = .89). We conducted a correlation test to test whether this observed relationship indicates a true relationship in the population. The null hypothesis was that there was no true correlation between these variables in the population. With a p-value < .001, we reject the null hypothesis and conclude that depression symptom severity and anxiety symptom severity are positively correlated among the full population of college students. In addition, we are 95% certain that the true correlation coefficient falls between .75 and .96.
+
+## Visualizing the Test
+
+```{r}
+#| echo = T
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  ggpubr::stat_cor()
+```
+
+## Linear Regression
+
+Linear regression is an extension of correlation. Now, in addition to showing the strength and direction of a relationship, we can:
+
+1.  Show how much the DV increases/decreases as the IV increases, in units
+2.  Show how much multiple IVs relate to a single DV
+
+## The "Linear Model"
+
+A great deal of statistics is based on the "linear model." This might sound intimidating, but it's actually something you learned in Algebra I.
+
+$y = mx + b$
+
+. . .
+
+$\,$
+
+$E(Y) = \beta_0 + \beta_1X + \epsilon$
+
+## Visualizing the Linear Model
+
+```{r}
+ggplot(
+  data = NULL,
+  mapping = aes(x = 0:10, y = 0:10)
+) +
+  geom_abline(slope = 1, intercept = 2) +
+  scale_x_continuous(limits = c(0, 10), breaks = 0:10, name = "x-Axis") +
+  scale_y_continuous(limits = c(0, 10), breaks = 0:10, name = "y-Axis") +
+  ggtitle("y = 1x + 2")
+```
+
+## Visualizing the Linear Model
+
+```{r}
+#| echo = T
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+. . .
+
+$E(Y) = \beta_0 + \beta_1X + \epsilon$
+
+## Visualizing the Linear Model
+
+- What is $E(Y)$?
+- What is $\beta_0$?
+- What is $\beta_1X$?
+- What is $\epsilon$?
+
+## Estimating the Linear Model
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+Just like the population mean $\mu$ is estimated with $\bar{x}$, our population coefficients $\beta$ are estimated with $b$.
+
+$E(Y) = \beta_0 + \beta_1X + \epsilon$ $\leftarrow$ our *population* linear model
+
+. . .
+
+becomes...
+
+. . .
+
+$\hat{Y} = b_0 + b_1X + e$ $\leftarrow$ our *estimated* linear model
+
+## Error in the Linear Model
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+The linear model is unique because it accounts for "error" - all of the confounding factors that keep us from having a perfect 1:1 relationship between $X$ (our $IV$) and $Y$ (our $DV$). 
+
+. . .
+
+When we estimate a linear model with our dataset, we can actually see what these errors are. We call these errors "residuals" and refer to them with $e$. 
+
+## Error in the Linear Model
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+In fact, error is so essential to the linear model that we can't estimate our models without it. We pick our regression line (the "line of best fit") by figuring out what line minimizes the residuals.
+
+## Assumptions in the Linear Model
+
+There are many assumptions that we make when we use a linear model. I would like to focus on __two__:
+
+1. The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is _linear_
+2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+
+## Assumptions in the Linear Model
+
+1. The relationship between $X$ (the $IV$) and $Y$ (the $DV$) is _linear_
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+## Assumptions in the Linear Model
+
+2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+
+```{r}
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x", se = F)
+```
+
+## Assumptions in the Linear Model
+
+2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+
+```{r}
+#| echo = T
+my_lm <- lm(data = tiny_data, anxiety_severity ~ depression_severity)
+residuals <- resid(my_lm)
+
+hist(residuals)
+```
+
+## Assumptions in the Linear Model
+
+2. Our residuals represent _random error_: they are normally distributed and don't depend on $X$
+
+```{r}
+#| echo = T
+my_lm <- lm(data = tiny_data, anxiety_severity ~ depression_severity)
+residuals <- resid(my_lm)
+
+plot(tiny_data$depression_severity, residuals)
+```
+
+## Recap
+
+- The linear model describes the linear relationship between $X$ (our $IV$) and $Y$ (our $DV$)
+- We estimate the regression line by finding the line that minimizes the residuals
+- We're interested in learning about $\beta$ - the slope between $X$ and $Y$
+- The relationship between $X$ and $Y$ has to be linear, and our residuals have to be totally random
+
+## Estimating the Linear Model in R
+
+```{r}
+#| echo = T
+my_lm <- lm(data = tiny_data, anxiety_severity ~ depression_severity)
+
+summary(my_lm)
+```
+
+## Testing our $b$ Coefficient
+
+```{r}
+summary(my_lm)
+```
+
+Like any statistic, $b$ has a sampling distribution under $h_0$ that we will use to determine our _p_-value.
+
+. . .
+
+In addition, $b$ has an observed sampling distribution that we will use to determine its confidence interval.
+
+## Testing our $b$ Coefficient
+
+```{r}
+curve(dnorm(x, mean = 0, sd = .1281), 
+      from = -1.5, 
+      to = 1.5,
+      main = "Sampling Distribution of b Under the Null Hypothesis, n = 20",
+      ylab = "Density",
+      xlab = "b")
+```
+
+## Testing our $b$ Coefficient
+
+```{r}
+curve(dnorm(x, mean = .7115, sd = .1281), 
+      from = -1.5, 
+      to = 1.5,
+      main = "Sampling Distribution of our Observed b, n = 20",
+      ylab = "Density",
+      xlab = "b")
+```
+
+## Testing our $b$ Coefficient
+
+```{r}
+#| echo = T
+summary(my_lm)
+
+confint(my_lm)
+```
+
+## Reporting the Test
+
+In our sample, we found that a one-unit increase in depression symptom severity was associated with a 0.72-unit increase in anxiety symptom severity (95% CI: 0.44, 0.98). The _p_-value for this test was < .001, indicating that increased depression symptom severity is associated with increased anxiety symptom severity among the full population of college students. Our 95% confidence interval was 0.44, 0.98, indicating that we are 95% certain that a one-unit increase in depression symptom severity is associated with between a 0.44 and a 0.98-unit increase in anxiety symptom severity among the full population.
+
+## Visualizing the Test
+
+```{r}
+#| echo = T
+tiny_data %>%
+  ggplot(aes(x = depression_severity, y = anxiety_severity)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = "y ~ x")
+```
