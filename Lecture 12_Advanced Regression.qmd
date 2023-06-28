@@ -15,11 +15,9 @@ set.seed(546767)
 
 -   Dependent variable (a.k.a. $DV$, a.k.a. $Y$): The variable that *depends on* the independent variable
 
--   Independent variable (a.k.a. $IV$, a.k.a. $X$): The variable whose variation we're interested in
+-   Independent variable(s) (a.k.a. $IV$, a.k.a. $X$): The variable(s) whose variation we're interested in
 
--   E.g., Does depression symptom severity ($DV$) depend on gender ($IV$)?
-
--   E.g., Do grades ($DV$) depend on depression symptom severity ($IV$)?
+-   E.g., Does depression symptom severity ($DV$) depend on financial stress ($IV$), after controlling for gender ($IV$)?
 
 ## Testing Relationships
 
@@ -64,6 +62,8 @@ In a population: $E(Y) = \beta_0 + \beta_1X + \epsilon$
 
 . . .
 
+$\space$
+
 In a sample: $\hat{Y} = b_0 + b_1X + e$
 
 ## Visualizing the Linear Model (Recap)
@@ -95,7 +95,7 @@ $\hat{Y} = b_0 + b_1X + e$
 
 -   The linear model describes the linear relationship between $X$ (our $IV$) and $Y$ (our $DV$)
 -   We estimate the regression line by finding the line that minimizes the residuals
--   We're interested in learning about $\beta:$ the slope between $X$ and $Y$
+-   We're interested in learning about $\beta:$ the slope between $X$ and $Y$ in the population
 -   The relationship between $X$ and $Y$ has to be linear, and our residuals have to be totally random
 
 ## Multiple Linear Regression
@@ -108,9 +108,13 @@ E.g., the relationship between financial stress ($X_1$), gender ($X_2$), and dep
 
 . . .
 
+$\space$
+
 $E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \epsilon$
 
 . . .
+
+$\space$
 
 $\hat{Y} = b_0 + b_1X_1 + b_2X_2 + e$
 
@@ -123,7 +127,49 @@ multiple_lm <- lm(data = tiny_data, depression_severity ~ financial_stress + gen
 summary(multiple_lm)
 ```
 
+$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + e$
+
 ## Interpreting Multiple Linear Regression
+
+-   When there is only one $IV$, we interpret its coefficient ($b$) as the amount we expect the $DV$ to change for every one-unit increase in the $IV$
+-   When there are multiple $IV$s, we add an extra statement to the end: "after controlling for the other $IV$s"
+-   e.g., $b_{financial \space stress}$ represents the amount we expect depression symptom severity to change for each one-unit increase in financial stress - *after controlling for gender*
+
+## Example: Multiple Linear Regression
+
+RQ: What is the relationship between financial stress ($X_1$) and depression symptom severity ($Y$), after controlling for gender ($X_2$)?
+
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \epsilon$
+
+-   $h_0: \beta_1 = 0$
+-   $h_1: \beta_1 \ne 0$
+
+## Example: Multiple Linear Regression
+
+```{r}
+#| echo = T
+bivariate_regression <- lm(data = tiny_data,
+                            formula = depression_severity ~ financial_stress)
+
+summary(bivariate_regression)
+```
+
+## Example: Multiple Linear Regression
+
+```{r}
+#| echo = T
+multiple_regression <- lm(data = tiny_data,
+                          formula = depression_severity ~ financial_stress + gender)
+
+summary(multiple_regression)
+```
+
+## Example: Multiple Linear Regression
+
+```{r}
+#| echo = T
+confint(multiple_regression)
+```
 
 ## Visualizing Multiple Linear Regression
 
@@ -136,6 +182,10 @@ tiny_data %>%
   geom_parallel_slopes(se = F)
 ```
 
+## Reporting Multiple Linear Regression
+
+We conducted a multiple linear regression to estimate the relationship between financial stress and depression symptom severity, after controlling for student gender. Before controlling for gender, financial stress was significantly positively associated with depression symptom severity (*b* = 1.97, *p* = .003). After controlling for gender, financial stress was significantly positively associated with depression symptom severity, but the relationship was slightly weaker (*b* = 1.67, 95% CI: 0.49, 2.85; *p* = .006).
+
 ## Interaction Terms in Linear Regression
 
 The linear model can also represent the *interaction* between two variables: when the effect of one $IV$ on the $DV$ *depends on* another $IV$.
@@ -146,11 +196,11 @@ E.g., the relationship between financial stress ($X_1$), gender ($X_2$), and the
 
 . . .
 
-$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_1X_1\beta_2X_2 + \epsilon$
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3X_1X_2 + \epsilon$
 
 . . .
 
-$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + b_1X_1b_2X_2 e$
+$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + b_3X_1X_2 + e$
 
 ## Interaction Terms in R
 
@@ -161,7 +211,57 @@ interaction_lm <- lm(data = tiny_data, depression_severity ~ financial_stress + 
 summary(interaction_lm)
 ```
 
+$\hat{Y} = b_0 + b_1X_1 + b_2X_2 + b_3X_1X_2 + e$
+
 ## Interpreting Interaction Terms
+
+-   The exact $b$ coefficients in an interaction become very hard to interpret
+-   Instead, we rely on visualizations to interpret interactions
+
+. . .
+
+![](https://upload.wikimedia.org/wikipedia/commons/6/6c/GSS_sealevel_interaction.png)
+
+## Example: Interaction Terms
+
+RQ: Does the relationship between financial stress ($X_1$) and depression symptom severity ($Y$) depend on gender ($X_2$)?
+
+$E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3X_1X_2 + \epsilon$
+
+-   $h_0: \beta_3 = 0$
+-   $h_1: \beta_3 \ne 0$
+
+## Example: Interaction Terms
+
+```{r}
+#| echo = T
+bivariate_regression <- lm(data = tiny_data,
+                            formula = depression_severity ~ financial_stress)
+
+summary(bivariate_regression)
+```
+
+## Example: Interaction Terms
+
+```{r}
+#| echo = T
+multiple_regression <- lm(data = tiny_data,
+                          formula = depression_severity ~ financial_stress + gender)
+
+summary(multiple_regression)
+```
+
+## Example: Interaction Terms
+
+```{r}
+#| echo = T
+regression_with_interaction <- lm(
+  data = tiny_data,
+  formula = depression_severity ~ financial_stress + gender + financial_stress*gender
+)
+
+summary(regression_with_interaction)
+```
 
 ## Visualizing Interaction Terms
 
@@ -172,13 +272,17 @@ tiny_data %>%
   geom_smooth(method = "lm", formula = "y ~ x", se = F)
 ```
 
+## Reporting Interaction Terms
+
+We conducted a multiple linear regression with an interaction effect to determine whether the relationship between financial stress and depression symptom severity depends on student gender. We found a significant interaction term between financial stress and male gender, such that financial stress had a stronger effect on depression symptom severity for men than for women (_p_ = .034).
+
 ## Polynomial Terms in Linear Regression
 
 The linear model can also represent polynomial (i.e., curved) relationships between an $IV$ and $DV$.
 
 . . .
 
-E.g., the quadratic relationship between age ($X_1$) and depression symptom severity ($Y$)
+E.g., the curved (quadratic) relationship between age ($X_1$) and depression symptom severity ($Y$)
 
 . . .
 
@@ -201,13 +305,138 @@ summary(polynomial_lm)
 
 ## Interpreting Polynomial Terms
 
-## Visualizing Polynomial Terms
+- Polynomial regression lines work the same way as polynomial lines in algebra. For example, $y = x^2$ is a U-shaped curve, $y = -x^2$ is an upside-down U, etc.
+- A significant $X^2$ (or $X^3$, etc.) term in a regression means that there is a significant "curvilinear" relationship between the $IV$ and the $DV$
+
+. . .
+
+![](https://static.javatpoint.com/tutorial/machine-learning/images/machine-learning-polynomial-regression.png)
+
+## Example: Polynomial Terms
 
 ```{r}
+#| echo = T
+clean_data %>%
+  ggplot(aes(x = age, y = belonging)) +
+  stat_summary()
+```
+
+## Example: Polynomial Terms
+
+A simple linear regression shows a significant linear relationship between age and belonging.
+
+```{r}
+#| echo = T
+linear_regression <- lm(
+  data = clean_data,
+  formula = belonging ~ age
+)
+
+summary(linear_regression)
+```
+
+## Example: Polynomial Terms
+
+However, the residuals are not evenly distributed across age; this relationship doesn't look linear.
+
+```{r}
+#| echo = T
+clean_data$residuals <- resid(linear_regression)
+
+clean_data %>%
+  ggplot(aes(x = age, y = residuals)) +
+  stat_summary()
+```
+
+## Example: Polynomial Terms
+
+However, the residuals are not evenly distributed across age; this relationship doesn't look linear.
+
+```{r}
+#| echo = T
 clean_data %>%
   ggplot(aes(x = age, y = belonging)) +
   stat_summary() +
-  geom_smooth(method = "lm", formula = "y ~ poly(x, 2)", se = F)
+  geom_smooth(method = "lm", formula = "y ~ x")
 ```
 
-## Logistic Regression
+## Example: Polynomial Terms
+
+Since the relationship looks curved, we add a polynomial term. This term is significant, indicating a significant U-shaped relationship between age and belonging. 
+
+```{r}
+#| echo = T
+clean_data$age_squared <- clean_data$age^2
+
+quadratic_regression <- lm(data = clean_data, belonging ~ age + age_squared)
+
+summary(quadratic_regression)
+```
+
+## Example: Polynomial Terms
+
+This fits our data better, but not by much
+
+```{r}
+#| echo = T
+clean_data$residuals <- resid(quadratic_regression)
+
+clean_data %>%
+  ggplot(aes(x = age, y = residuals)) +
+  stat_summary()
+```
+
+## Example: Polynomial Terms
+
+This fits our data better, but not by much
+
+```{r}
+#| echo = T
+clean_data %>%
+  ggplot(aes(x = age, y = belonging)) +
+  stat_summary() +
+  geom_smooth(method = "lm", formula = "y ~ poly(x, 2)")
+```
+
+## Example: Polynomial Terms
+
+Our data don't seem "U" shaped, since belonging doesn't go up at higher ages. We can account for even more curvature in the line with an extra term - in this case, $x^3$. 
+
+```{r}
+#| echo = T
+clean_data$age_cubed <- clean_data$age^3
+
+cubic_regression <- lm(data = clean_data, belonging ~ age + age_squared + age_cubed)
+
+summary(cubic_regression)
+```
+
+## Example: Polynomial Terms
+
+This fits our data much better!
+
+```{r}
+#| echo = T
+clean_data$residuals <- resid(cubic_regression)
+
+clean_data %>%
+  ggplot(aes(x = age, y = residuals)) +
+  stat_summary()
+```
+
+## Example: Polynomial Terms
+
+This fits our data much better!
+
+```{r}
+#| echo = T
+clean_data %>%
+  ggplot(aes(x = age, y = belonging)) +
+  stat_summary() +
+  geom_smooth(method = "lm", formula = "y ~ poly(x, 3)")
+```
+
+## Reporting Polynomial Terms
+
+We conducted a linear regression to assess the relationship between age and belonging on campus. We found a significant curvilinear relationship where belonging decreases with age, but then levels off. This was best represented with a cubic regression term (_p_ < .001). Thus, we conclude that there is a significant curvilinear relationship between age and belonging among college students. 
+

@@ -1,0 +1,273 @@
+---
+title: "Logistic Regression"
+format:
+  html:
+    embed-resources: true
+toc: true
+---
+
+## Brief Summary
+
+-   Logistic regression is a method used to model the relationship between one or more IVs and a dichotomous DV
+
+-   While linear regression predicts actual values on a DV, logistic regression predicts the odds of the DV occurring vs not occurring
+
+## Theory
+
+Regression is a way to model the relationship between one or more independent variables (IVs) and one dependent variable (DV). When your dependent variable is continuous, this is achieved through *linear regression* (aka "ordinary least squares (OLS) regression"). But what happens when our DV is dichotomous?
+
+::: callout-note
+## Review
+
+Linear regression assumes that our *residuals* - the difference between the model's predicted values and the actual values of the DV in our data - are just *random noise*. Practically speaking, this means that residuals must be (a) normally distributed and (b) show homoscedasticity (constant variance across levels of the IV or IVs).
+:::
+
+If we try to conduct a linear regression with a dichotomous outcome, we break these assumptions. Consider this example about passengers aboard the Titanic:
+
+**Research Question:** Is a passenger's ticket fare (IV) associated with passenger survival (DV)?
+
+```{r}
+library(titanic)
+data("titanic_train")
+str(titanic_train)
+```
+
+We can attempt to fit a linear regression to answer this question:
+
+```{r}
+survival_by_fare_linear <- lm(
+  data = titanic_train,
+  formula = Survived ~ Fare,
+  na.action = na.omit
+)
+
+summary(survival_by_fare_linear)
+```
+
+However, while this gives us a significant result, the residuals clearly violate our assumption of normality:
+
+```{r}
+residuals <- resid(survival_by_fare_linear)
+
+hist(residuals) # Residuals are NOT normally distributed
+```
+
+This makes sense when you consider what the linear regression is trying to do: predict each individual's survival in continuous units. We can see that here:
+
+```{r}
+predicted_values <- predict(survival_by_fare_linear)
+
+hist(predicted_values)
+```
+
+But of course, no Titanic passenger can only 40% survive; you either survive (1) or you don't (0). You can also see that our linear regression predicts that some passengers have a "survival" greater than one; this also doesn't make sense. This is where logistic regression comes in.
+
+### What does logistic regression predict?
+
+The logistic model predicts the *probability of a dichotomous outcome occurring*. At the lower end, the logistic model may predict a probability of 0, and at the higher end, 1. Unlike linear regression's straight line, the logistic regression curve has an "S" shape:
+
+![](https://miro.medium.com/v2/resize:fit:640/format:webp/1*pd_Iaq4P8llKi_3iloNhEA.png)
+
+Here is a visual of both regression lines, as applied to our Titanic dataset:
+
+```{r}
+library(tidyverse)
+titanic_train %>%
+  drop_na(Fare, Survived) %>%
+  ggplot(aes(x = Fare, y = Survived)) +
+  geom_point(alpha = .05) +
+  geom_smooth(method = "lm", formula = y ~ x, se = F, color = "red") +
+  geom_smooth(method = "glm", formula = y ~ x, se = F, color = "blue", method.args = list(family = binomial))
+```
+
+Clearly, our logistic regression line (blue) is a better fit to the data. Note that depending on the relationship between your IV(s) and DV, you may not always see the full "S"-shape; in this case, we only see the top half. You might also see a reversed "S", as in survival by age:
+
+```{r}
+titanic_train %>%
+  drop_na(Age, Survived) %>%
+  ggplot(aes(x = Age, y = Survived)) +
+  geom_point(alpha = .05) +
+  geom_smooth(method = "glm", formula = y ~ x, se = F, color = "blue", method.args = list(family = "binomial"))
+```
+
+In this case, the line even looks approximately straight. That's because the relationship is so weak that you're only seeing the very middle of the "S" (and *very* stretched out). However, this is still the logistic curve; it is predicting the *probability* of survival, and will never predict less than 0 or greater than 1.
+
+### What are the "odds"?
+
+When you report a logistic regression, you will be reporting something called an "odds ratio." Before we talk about what an odds ratio is, we should clarify the difference between "odds" and "probability".
+
+The probability, *p*, is the chance that something happens; it can range from 0 (no chance) to 1 (completely certain). It can also be expressed in terms of percents; from 0% to 100%.
+
+The *odds* of something happening is another way to express how likely it is. However, odds are written as the *ratio* of the event happening to the event not happening. For example, if the odds of a horse winning a race are given as 3:2, that means that we expect the horse to win 3 races for every 2 races lost. If the odds are 1:10, we expect the horse to win 1 race for every 10 races lost. Odds relate to probability as follows:
+
+| Probability of Event | Probability of No Event | Odds        |
+|----------------------|-------------------------|-------------|
+| 0                    | 1                       | 0:1, or 0   |
+| .1                   | .9                      | 1:9         |
+| .2                   | .8                      | 2:8, or 1:4 |
+| .3                   | .7                      | 3:7         |
+| .4                   | .6                      | 4:6, or 2:3 |
+| .5                   | .5                      | 5:5, or 1:1 |
+| .6                   | .4                      | 6:4, or 3:2 |
+| .7                   | .3                      | 7:3         |
+| .8                   | .2                      | 8:2, or 4:1 |
+| .9                   | .1                      | 9:1         |
+| 1                    | 0                       | 1:0, or Inf |
+
+In other words, odds = *p* / (1 - *p*)
+
+The *odds ratio* describes the relative odds of two things happening; for example, the odds of surviving the Titanic as a woman versus the odds of surviving the Titanic as a man. According to our data, .74 (or 74%) of women survived while only .19 (or 19%) of men survived.
+
+```{r}
+titanic_train %>%
+  group_by(Sex) %>%
+  summarize(ProportionSurvived = mean(Survived))
+```
+
+Thus, the odds of a woman surviving were .74 / (1 - .74) = .74 / .26 = **2.8**, while the odds of a man surviving were .19 / (1 - .19) = .19 / .81 = **0.2**. Our odds *ratio* is therefore 2.8:0.2, which comes out to 2.8 / 0.2 = **14**. (The odds ratio of a man surviving relative to a woman surviving is 0.2 / 2.8 = 0.7.)
+
+Note the difference between the odds ratio (14) and the relative probability (.74 / .19 = 3.9). Both are stark, but the odds ratio is much larger.
+
+### "Log Odds"
+
+In order to estimate odds , logistic regression has to transform everything via the natural logarithm. We won't get into the "how" or "why" here, but suffice to say that by default, the `glm()` function in R will present your regression coefficients in terms of the natural logarithm of the odds ratio, aka the "log odds." In order to get the odds ratio, we use the `exp()` function to reverse the logarithmic transformation; `odds_ratio = exp(log_odds)`. When log odds are positive, the odds ratio is greater than 1, and when log odds are negative, the odds ratio is less than 1.
+
+## Application
+
+### Logistic regression with one categorical IV
+
+Let's begin with a simple bivariate logistic regression using a categorical IV: sex. As we saw above, women were much more likely to survive the Titanic than men. We calculated the odds ratios manually above, and found an OR of .7 for men surviving relative to women. The `glm()` function in R will do the same thing, but it will also test the significance of that odds ratio and give us a confidence interval around it.
+
+`glm()` stands for the "general linear model"; thus, it can be used to run not only logistic regression models, but also linear regression models and more. To use `glm()` to run logistic regression, we include the argument `family = "binomial"`.
+
+```{r}
+survival_by_sex <- glm(
+  data = titanic_train,
+  formula = Survived ~ Sex,
+  na.action = na.omit,
+  family = "binomial"
+)
+
+summary(survival_by_sex)
+```
+
+The model output tells us that male sex is significantly associated with survival (*p* \< .001), with a log odds of -2.5. We can transform that number into an odds ratio like this:
+
+```{r}
+exp(-2.5)
+```
+
+We can also save time (and calculate confidence intervals) by doing this with the `oddsratio` package.
+
+```{r}
+library("oddsratio")
+or_glm(
+  data = titanic_train, 
+  model = survival_by_sex, 
+  ci = .95
+)
+```
+
+Taken together, we can see that male sex was negatively associated with survival (OR = 0.08, 95% CI: 0.06, 0.11, *p* \< .001). This is the same as what we calculated above, give or take some rounding error.
+
+We can also use IVs with more than two levels by dummy coding the variables, as in linear regression. `glm()` will dummy-code our variables by default. For example, here is a logistic regression of survival predicted by passenger class, given as a categorical variable:
+
+```{r}
+titanic_train$Class <- case_when(
+  titanic_train$Pclass == 1 ~ "First Class",
+  titanic_train$Pclass == 2 ~ "Second Class",
+  titanic_train$Pclass == 3 ~ "Third Class"
+)
+
+survival_by_class <- glm(
+  data = titanic_train,
+  formula = Survived ~ Class,
+  na.action = na.omit,
+  family = "binomial"
+)
+
+summary(survival_by_class)
+
+or_glm(
+  data = titanic_train, 
+  model = survival_by_class,
+  ci = .95
+)
+```
+
+Relative to first class (the reference group), second class passengers were less likely to survive (OR = 0.53, 95% CI: 0.35, 0.79, *p* = .002), and the third class passengers were also less likely to survive (OR = 0.19, 95% CI: 0.13, 0.27, *p* \< .001).
+
+### Logistic regression with one continuous IV
+
+With dichotomous (or dummy-coded) IVs, logistic regression calculates the odds ratio as the odds of the outcome occurring when the IV equals 1, relative to the odds of the outcome occurring when the IV equals 0. With continuous IVs, the odds ratio represents the odds of the outcome occurring when the IV equals X, relative to the odds of the outcome occurring when the IV equals X - 1. For example, consider a logistic regression of survival by age:
+
+```{r}
+survival_by_age <- glm(
+  data = titanic_train,
+  formula = Survived ~ Age,
+  na.action = na.omit,
+  family = "binomial"
+)
+
+summary(survival_by_age)
+
+or_glm(
+  data = titanic_train,
+  model = survival_by_age,
+  ci = .95,
+  incr = list(Age = 1)
+)
+```
+
+Age was negatively associated with survival, with an odds ratio of OR = 0.99 for each additional year. Note the additional argument in `or_glm()`: `incr = list(Age = 1)`. This refers to the *increment* of Age that we would like reflected in the odds ratio. It is currently set to 1, meaning that the odds ratio represents the odds of survival given age X relative to age X - 1. However, we can see that the odds don't change much with each individual year. If we wanted to choose a wider increment (say, ten years), we could do so as follows:
+
+```{r}
+or_glm(
+  data = titanic_train,
+  model = survival_by_age,
+  ci = .95,
+  incr = list(Age = 10)
+)
+```
+
+This is a little easier to interpret. The *p*-value is the same as in the initial output, but the odds ratio now represents the change in odds of survival given a difference of *ten* years. This odds ratio is equal to .90, with a 95% CI of .81, .99.
+
+### Logistic regression with multiple IVs
+
+As with linear regression, logistic regression can incorporate multiple IVs simultaneously. As with linear regression, you interpret each coefficient as the odds ratio (or log odds, in the default output) associated with that IV after controlling for the effect of the other IV(s).
+
+Let's put everything together with a logistic regression predicting survival given age, sex, and ticket class:
+
+```{r}
+survival_by_age_sex_class <- glm(
+  data = titanic_train,
+  formula = Survived ~ Age + Sex + Class,
+  na.action = na.omit,
+  family = "binomial"
+)
+
+summary(survival_by_age_sex_class)
+
+or_glm(
+  data = titanic_train,
+  model = survival_by_age_sex_class,
+  ci = .95,
+  incr = list(Age = 1)
+)
+```
+
+After controlling for sex and ticket class, each additional year of age was significantly negatively associated with survival (OR = .96, 95% CI: .95, .98, *p* \< .001). After controlling for age and ticket class, male sex was significantly negatively associated with survival as well (OR = .08, 95% CI: .05, .12, *p* \< .001). After controlling for age and sex, having a ticket in second class was negatively associated with survival relative to having a ticket in first class (OR = .27, 95% CI: .16, .46, *p* \< .001), and so was having a ticket in third class (OR = .08, 95% CI: .04, .13, *p* \< .001).
+
+You can use the package `stargazer` to print pretty tables of each regression, either individually or in a single table:
+
+```{r}
+#| results: "asis"
+library(stargazer)
+stargazer(
+  survival_by_age, 
+  survival_by_sex,
+  survival_by_class, 
+  survival_by_age_sex_class, 
+  type = "html"
+)
+```
